@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
+import api from '../services/api';
 
 const CartContext = createContext(null);
 
@@ -67,6 +68,20 @@ function cartReducer(state, action) {
 
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+
+  // Hydrate cart from server on mount (works for both authenticated users and guests with session cookie)
+  useEffect(() => {
+    api.get('/api/cart')
+      .then((res) => {
+        const items = res.data?.cart?.items ?? res.data?.data?.items ?? res.data?.items ?? [];
+        if (items.length > 0) {
+          dispatch({ type: 'SET_CART', items });
+        }
+      })
+      .catch(() => {
+        // Not authenticated or network error — keep empty local cart
+      });
+  }, []);
 
   const addItem = (item) => dispatch({ type: 'ADD_ITEM', item });
   const updateItem = (productId, variantLabel, quantity) =>

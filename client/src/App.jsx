@@ -14,13 +14,15 @@ import ResetPassword from './pages/ResetPassword';
 import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import OrderDetail from './pages/OrderDetail';
+import OrderConfirmation from './pages/OrderConfirmation';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminCustomers from './pages/admin/Customers';
 
 function AdminRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return null; // wait for localStorage restore
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== 'admin') return <Navigate to="/login" replace />;
   return children;
@@ -93,6 +95,14 @@ function AppRoutes() {
         element={
           <Layout onSearch={handleSearch}>
             <OrderDetail />
+          </Layout>
+        }
+      />
+      <Route
+        path="/order-confirmation/:token"
+        element={
+          <Layout onSearch={handleSearch}>
+            <OrderConfirmation />
           </Layout>
         }
       />

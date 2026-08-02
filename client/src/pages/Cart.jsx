@@ -9,19 +9,18 @@ export default function Cart() {
   const { items, setCart } = useCart();
   const hasOutOfStock = items.some((item) => item.outOfStock);
 
-  // Sync cart from API on page load
+  // Re-sync from server when visiting the cart page directly
+  // (CartContext hydrates on app mount, but this ensures fresh data after
+  //  navigating here from an external link or after a long session)
   useEffect(() => {
-    async function syncCart() {
-      try {
-        const res = await api.get('/api/cart');
-        const cartItems = res.data?.data?.items ?? res.data?.items ?? [];
-        setCart(cartItems);
-      } catch {
-        // If unauthenticated or error, keep local cart state
-      }
-    }
-    syncCart();
-  }, []);
+    api.get('/api/cart')
+      .then((res) => {
+        const cartItems = res.data?.cart?.items ?? res.data?.data?.items ?? res.data?.items ?? [];
+        // Only update if server has items (prevents clearing locally-added items on slow networks)
+        if (cartItems.length > 0) setCart(cartItems);
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-linen">

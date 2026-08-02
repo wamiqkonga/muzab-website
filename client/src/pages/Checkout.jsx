@@ -1,200 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-
-const STEPS = ['Address', 'Review', 'Payment'];
-
-function CheckoutStepper({ currentStep }) {
-  return (
-    <div className="flex items-center justify-center mb-8">
-      {STEPS.map((label, idx) => {
-        const stepNum = idx + 1;
-        const isCompleted = stepNum < currentStep;
-        const isActive = stepNum === currentStep;
-        return (
-          <React.Fragment key={label}>
-            <div className="flex flex-col items-center">
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${isCompleted ? 'bg-indigo-brand border-indigo-brand text-white' : isActive ? 'bg-saffron-red border-saffron-red text-white' : 'bg-white border-slate-warm text-slate-warm'}`}>
-                {isCompleted ? '✓' : stepNum}
-              </div>
-              <span className={`mt-1 text-xs font-medium ${isActive ? 'text-saffron-red' : isCompleted ? 'text-indigo-brand' : 'text-slate-warm'}`}>{label}</span>
-            </div>
-            {idx < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${isCompleted ? 'bg-indigo-brand' : 'bg-gray-200'}`} />}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
-
-const INITIAL_ADDRESS = { name: '', line1: '', line2: '', city: '', state: '', pinCode: '', phone: '' };
-
-function AddressForm({ onNext }) {
-  const [form, setForm] = useState(INITIAL_ADDRESS);
-  const [errors, setErrors] = useState({});
-  const [pinStatus, setPinStatus] = useState(null);
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-    if (name === 'pinCode') setPinStatus(null);
-  }
-
-  async function handlePinBlur() {
-    const pin = form.pinCode.trim();
-    if (!/^\d{6}$/.test(pin)) return;
-    setPinStatus('checking');
-    try {
-      await api.post('/api/orders/checkout', { address: { ...form, pinCode: pin }, validateOnly: true });
-      setPinStatus('ok');
-    } catch (err) {
-      const code = err.response?.data?.error?.code;
-      setPinStatus(code === 'UNSERVICEABLE_PIN' ? 'unavailable' : 'ok');
-    }
-  }
-
-  function validate() {
-    const e = {};
-    if (!form.name.trim()) e.name = 'Full name is required';
-    if (!form.line1.trim()) e.line1 = 'Address line 1 is required';
-    if (!form.city.trim()) e.city = 'City is required';
-    if (!form.state.trim()) e.state = 'State is required';
-    if (!form.phone.trim()) e.phone = 'Phone number is required';
-    else if (!/^\d{10}$/.test(form.phone.trim())) e.phone = 'Enter a valid 10-digit phone number';
-    if (!form.pinCode.trim()) e.pinCode = 'PIN code is required';
-    else if (!/^\d{6}$/.test(form.pinCode.trim())) e.pinCode = 'PIN code must be 6 digits';
-    return e;
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
-    if (pinStatus === 'unavailable') return;
-    onNext(form);
-  }
-
-  const inputClass = (field) => `w-full px-3 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-red transition ${errors[field] ? 'border-red-500' : 'border-gray-300'}`;
-
-  return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-indigo-brand mb-1">Full Name <span className="text-saffron-red">*</span></label>
-        <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Recipient's full name" className={inputClass('name')} />
-        {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-indigo-brand mb-1">Address Line 1 <span className="text-saffron-red">*</span></label>
-        <input type="text" name="line1" value={form.line1} onChange={handleChange} placeholder="House / Flat / Block No., Street" className={inputClass('line1')} />
-        {errors.line1 && <p className="mt-1 text-xs text-red-500">{errors.line1}</p>}
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-indigo-brand mb-1">Address Line 2 <span className="text-slate-warm text-xs">(optional)</span></label>
-        <input type="text" name="line2" value={form.line2} onChange={handleChange} placeholder="Landmark, Area" className={inputClass('line2')} />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-indigo-brand mb-1">City <span className="text-saffron-red">*</span></label>
-          <input type="text" name="city" value={form.city} onChange={handleChange} placeholder="City" className={inputClass('city')} />
-          {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city}</p>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-indigo-brand mb-1">State <span className="text-saffron-red">*</span></label>
-          <input type="text" name="state" value={form.state} onChange={handleChange} placeholder="State" className={inputClass('state')} />
-          {errors.state && <p className="mt-1 text-xs text-red-500">{errors.state}</p>}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-indigo-brand mb-1">PIN Code <span className="text-saffron-red">*</span></label>
-          <input type="text" name="pinCode" value={form.pinCode} onChange={handleChange} onBlur={handlePinBlur} placeholder="6-digit PIN" maxLength={6} className={inputClass('pinCode')} />
-          {errors.pinCode && <p className="mt-1 text-xs text-red-500">{errors.pinCode}</p>}
-          {pinStatus === 'checking' && <p className="mt-1 text-xs text-slate-warm">Checking serviceability...</p>}
-          {pinStatus === 'unavailable' && <p className="mt-1 text-xs text-red-500">Delivery unavailable to this PIN code.</p>}
-          {pinStatus === 'ok' && <p className="mt-1 text-xs text-green-600">Delivery available</p>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-indigo-brand mb-1">Phone <span className="text-saffron-red">*</span></label>
-          <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="10-digit mobile" maxLength={10} className={inputClass('phone')} />
-          {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-        </div>
-      </div>
-      <button type="submit" disabled={pinStatus === 'unavailable' || pinStatus === 'checking'}
-        className="w-full mt-2 py-3 rounded-md bg-saffron-red text-white font-semibold text-sm hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-        Continue to Review
-      </button>
-    </form>
-  );
-}
-
-const GST_RATE = 0.18;
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(amount);
-}
-
-function OrderReview({ onBack, onNext, addressData }) {
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.get('/api/cart')
-      .then((res) => setCart(res.data.data || res.data))
-      .catch(() => setError('Failed to load cart. Please try again.'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <div className="py-12 text-center text-slate-warm text-sm">Loading order summary...</div>;
-  if (error) return <div className="py-12 text-center text-red-500 text-sm">{error}</div>;
-
-  const items = cart?.items || [];
-  const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-  const shippingFee = cart?.shippingFee ?? null;
-  const gst = subtotal * GST_RATE;
-  const grandTotal = subtotal + (shippingFee ?? 0) + gst;
-
-  return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-semibold text-indigo-brand">Order Summary</h2>
-      <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
-        {items.length === 0 && <p className="p-4 text-sm text-slate-warm text-center">Your cart is empty.</p>}
-        {items.map((item) => (
-          <div key={item._id || item.productId} className="flex items-center gap-3 p-3">
-            {item.image && <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-md flex-shrink-0" />}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-indigo-brand truncate">{item.name}</p>
-              {item.variantLabel && <p className="text-xs text-slate-warm">{item.variantLabel}</p>}
-              <p className="text-xs text-slate-warm">Qty: {item.quantity} x {formatCurrency(item.unitPrice)}</p>
-            </div>
-            <p className="text-sm font-semibold text-indigo-brand flex-shrink-0">{formatCurrency(item.unitPrice * item.quantity)}</p>
-          </div>
-        ))}
-      </div>
-      <div className="bg-linen rounded-lg p-4 space-y-2 text-sm">
-        <div className="flex justify-between text-slate-warm"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-        <div className="flex justify-between text-slate-warm"><span>Shipping</span><span>{shippingFee !== null ? formatCurrency(shippingFee) : 'Calculated at checkout'}</span></div>
-        <div className="flex justify-between text-slate-warm"><span>GST (18%)</span><span>{formatCurrency(gst)}</span></div>
-        <div className="flex justify-between font-bold text-indigo-brand border-t border-gray-200 pt-2 mt-2"><span>Grand Total</span><span>{formatCurrency(grandTotal)}</span></div>
-      </div>
-      {addressData && (
-        <div className="text-xs text-slate-warm bg-gray-50 rounded-lg p-3">
-          <p className="font-medium text-indigo-brand mb-1">Delivering to:</p>
-          <p>{addressData.name}, {addressData.line1}{addressData.line2 ? `, ${addressData.line2}` : ''}</p>
-          <p>{addressData.city}, {addressData.state} - {addressData.pinCode}</p>
-          <p>Phone: {addressData.phone}</p>
-        </div>
-      )}
-      <div className="flex gap-3 pt-2">
-        <button onClick={onBack} className="flex-1 py-3 rounded-md border border-indigo-brand text-indigo-brand text-sm font-medium hover:bg-indigo-brand hover:text-white transition">Back</button>
-        <button onClick={() => onNext({ subtotal, shippingFee, gst, grandTotal, items })} disabled={items.length === 0}
-          className="flex-1 py-3 rounded-md bg-saffron-red text-white text-sm font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Proceed to Payment
-        </button>
-      </div>
-    </div>
-  );
 }
 
 function loadRazorpayScript() {
@@ -208,34 +19,102 @@ function loadRazorpayScript() {
   });
 }
 
-function PaymentStep({ onBack, addressData, orderSummary }) {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [codEligible, setCodEligible] = useState(false);
+const INPUT_BASE = 'w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-maroon transition';
+const inputClass = (err) => `${INPUT_BASE} ${err ? 'border-red-400' : 'border-gray-300'}`;
 
+export default function Checkout() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { items, subtotal, gst, grandTotal, clearCart } = useCart();
+
+  // Contact
+  const [email, setEmail] = useState(user?.email || '');
+  const [emailError, setEmailError] = useState('');
+
+  // Address
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    line1: '', line2: '', city: '', state: '', pinCode: '', phone: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [pinStatus, setPinStatus] = useState(null); // null | 'checking' | 'ok' | 'unavailable'
+
+  // Payment
+  const [codEligible, setCodEligible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState('');
+
+  // Check COD eligibility when pinCode becomes a valid 6-digit number
   useEffect(() => {
-    api.post('/api/orders/checkout', { deliveryAddress: addressData, paymentMethod: 'razorpay', checkOnly: true })
-      .then((res) => { const d = res.data.data || res.data; setCodEligible(!!d.codEligible); })
-      .catch(() => {});
-  }, [addressData]);
+    const pin = form.pinCode.trim();
+    if (!/^\d{6}$/.test(pin)) { setCodEligible(false); return; }
+    api.get(`/api/orders/cod-eligibility?pin=${pin}`)
+      .then((res) => setCodEligible(!!res.data.eligible))
+      .catch(() => setCodEligible(false));
+  }, [form.pinCode]);
+
+  async function handlePinBlur() {
+    const pin = form.pinCode.trim();
+    if (!/^\d{6}$/.test(pin)) return;
+    setPinStatus('ok'); // all valid 6-digit PINs are serviceable pan-India
+  }
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    if (name === 'pinCode') setPinStatus(null);
+  }
+
+  function validate() {
+    const e = {};
+    if (!user && !email.trim()) e.email = 'Email is required to track your order';
+    else if (!user && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Enter a valid email address';
+    if (!form.name.trim()) e.name = 'Full name is required';
+    if (!form.line1.trim()) e.line1 = 'Address is required';
+    if (!form.city.trim()) e.city = 'City is required';
+    if (!form.state.trim()) e.state = 'State is required';
+    if (!form.pinCode.trim()) e.pinCode = 'PIN code is required';
+    else if (!/^\d{6}$/.test(form.pinCode.trim())) e.pinCode = 'PIN code must be 6 digits';
+    if (!form.phone.trim()) e.phone = 'Phone number is required';
+    else if (!/^\d{10}$/.test(form.phone.trim())) e.phone = 'Enter a valid 10-digit number';
+    return e;
+  }
 
   const initiateCheckout = useCallback(async (paymentMethod) => {
-    setLoading(true); setError('');
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setEmailError(validationErrors.email || '');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return null;
+    }
+    if (pinStatus === 'unavailable') {
+      setErrors((prev) => ({ ...prev, pinCode: 'Delivery unavailable to this PIN code' }));
+      return null;
+    }
+    setLoading(true);
+    setPageError('');
     try {
-      const res = await api.post('/api/orders/checkout', { deliveryAddress: addressData, paymentMethod });
+      const payload = {
+        deliveryAddress: form,
+        paymentMethod,
+        guestEmail: user ? undefined : email.trim().toLowerCase(),
+      };
+      const res = await api.post('/api/orders/checkout', payload);
       return res.data.data || res.data;
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to initiate checkout. Please try again.');
+      setPageError(err.response?.data?.error?.message || 'Failed to initiate checkout. Please try again.');
       return null;
     } finally {
       setLoading(false);
     }
-  }, [addressData]);
+  }, [form, email, pinStatus, user]);
+
 
   async function handleRazorpay() {
     const scriptLoaded = await loadRazorpayScript();
-    if (!scriptLoaded) { setError('Failed to load payment gateway. Please check your connection.'); return; }
+    if (!scriptLoaded) { setPageError('Failed to load payment gateway. Check your connection.'); return; }
     const data = await initiateCheckout('razorpay');
     if (!data) return;
     const options = {
@@ -246,80 +125,245 @@ function PaymentStep({ onBack, addressData, orderSummary }) {
       name: 'Muzab',
       description: 'Premium Saffron & Natural Products',
       handler: async function (response) {
-        setLoading(true); setError('');
+        setLoading(true); setPageError('');
         try {
-          await api.post('/api/orders/verify-payment', {
+          const verifyRes = await api.post('/api/orders/verify-payment', {
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
-            orderSummary,
+            orderSummary: data.orderSummary,
+            guestEmail: user ? undefined : email.trim().toLowerCase(),
           });
-          navigate('/my-orders', { state: { successMessage: 'Order placed successfully!' } });
+          const order = verifyRes.data.order;
+          clearCart();
+          navigate(`/order-confirmation/${order.confirmationToken}`);
         } catch (err) {
-          setError(err.response?.data?.error?.message || 'Payment verification failed. Please contact support.');
+          setPageError(err.response?.data?.error?.message || 'Payment verification failed. Contact support.');
           setLoading(false);
         }
       },
-      prefill: { name: addressData?.name, contact: addressData?.phone },
-      theme: { color: '#C0392B' },
-      modal: { ondismiss: () => { setLoading(false); setError('Payment was cancelled. Your cart is intact.'); } },
+      prefill: { name: form.name, contact: form.phone, email: email || user?.email },
+      theme: { color: '#800020' },
+      modal: { ondismiss: () => { setLoading(false); setPageError('Payment was cancelled. Your cart is intact.'); } },
     };
     const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', () => { setError('Payment failed. Please try again.'); setLoading(false); });
+    rzp.on('payment.failed', () => { setPageError('Payment failed. Please try again.'); setLoading(false); });
     rzp.open();
   }
 
   async function handleCOD() {
     const data = await initiateCheckout('cod');
     if (!data) return;
-    navigate('/my-orders', { state: { successMessage: 'Order placed! Pay on delivery.' } });
+    const order = data.order || data;
+    clearCart();
+    navigate(`/order-confirmation/${order.confirmationToken}`);
   }
 
-  return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-semibold text-indigo-brand">Payment</h2>
-      {orderSummary && (
-        <div className="bg-linen rounded-lg p-4 text-sm space-y-1">
-          <div className="flex justify-between text-slate-warm"><span>Subtotal</span><span>{formatCurrency(orderSummary.subtotal)}</span></div>
-          <div className="flex justify-between text-slate-warm"><span>Shipping</span><span>{orderSummary.shippingFee !== null ? formatCurrency(orderSummary.shippingFee) : 'Calculated at checkout'}</span></div>
-          <div className="flex justify-between text-slate-warm"><span>GST (18%)</span><span>{formatCurrency(orderSummary.gst)}</span></div>
-          <div className="flex justify-between font-bold text-indigo-brand border-t border-gray-200 pt-2 mt-1"><span>Grand Total</span><span>{formatCurrency(orderSummary.grandTotal)}</span></div>
-        </div>
-      )}
-      {error && <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">{error}</div>}
-      <div className="space-y-3">
-        <button onClick={handleRazorpay} disabled={loading}
-          className="w-full py-3 rounded-md bg-saffron-red text-white text-sm font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          {loading ? 'Processing...' : 'Pay with Razorpay'}
-        </button>
-        {codEligible && (
-          <button onClick={handleCOD} disabled={loading}
-            className="w-full py-3 rounded-md border-2 border-indigo-brand text-indigo-brand text-sm font-semibold hover:bg-indigo-brand hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
-            Pay on Delivery (COD)
-          </button>
-        )}
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-linen flex flex-col items-center justify-center gap-4 px-4">
+        <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <p className="text-lg font-semibold text-indigo-brand">Your cart is empty</p>
+        <Link to="/catalog" className="bg-maroon text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-900 transition-colors">
+          Browse Products
+        </Link>
       </div>
-      <button onClick={onBack} disabled={loading} className="w-full py-2 text-sm text-slate-warm hover:text-indigo-brand transition disabled:opacity-50">
-        Back to Order Review
-      </button>
-    </div>
-  );
-}
+    );
+  }
 
-export default function Checkout() {
-  const [step, setStep] = useState(1);
-  const [addressData, setAddressData] = useState(null);
-  const [orderSummary, setOrderSummary] = useState(null);
 
   return (
-    <div className="min-h-screen bg-linen py-10 px-4">
-      <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-md p-6 sm:p-8">
-        <h1 className="text-2xl font-bold text-indigo-brand text-center mb-1">Muzab</h1>
-        <p className="text-xs text-slate-warm text-center mb-6">Secure Checkout</p>
-        <CheckoutStepper currentStep={step} />
-        {step === 1 && <AddressForm onNext={(data) => { setAddressData(data); setStep(2); }} />}
-        {step === 2 && <OrderReview onBack={() => setStep(1)} onNext={(summary) => { setOrderSummary(summary); setStep(3); }} addressData={addressData} />}
-        {step === 3 && <PaymentStep onBack={() => setStep(2)} addressData={addressData} orderSummary={orderSummary} />}
+    <div className="min-h-screen bg-linen py-8 px-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <Link to="/" className="inline-flex items-center gap-2 mb-1">
+          <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+            <circle cx="17" cy="17" r="17" fill="#D4AF37" />
+            <text x="17" y="23" textAnchor="middle" fontSize="15" fontWeight="bold" fill="#800020" fontFamily="serif">م</text>
+          </svg>
+          <span className="text-xl font-serif font-bold text-maroon">Muzab</span>
+        </Link>
+        <p className="text-xs text-slate-warm flex items-center justify-center gap-1">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          Secure Checkout
+        </p>
+      </div>
+
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+
+        {/* ── Left: Form ── */}
+        <div className="space-y-6">
+
+          {pageError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+              {pageError}
+            </div>
+          )}
+
+          {/* Contact */}
+          <section className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
+            <h2 className="text-base font-bold text-maroon mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 bg-maroon text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+              Contact Information
+            </h2>
+            {!user && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email address <span className="text-red-500">*</span>
+                  <span className="ml-1 text-xs text-slate-warm font-normal">— for order confirmation &amp; tracking</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                  placeholder="you@example.com"
+                  className={inputClass(emailError)}
+                  autoComplete="email"
+                />
+                {emailError && <p className="mt-1 text-xs text-red-500">{emailError}</p>}
+                <p className="mt-2 text-xs text-slate-warm">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-maroon font-medium hover:underline">Sign in</Link>
+                  {' '}for faster checkout.
+                </p>
+              </div>
+            )}
+            {user && (
+              <p className="text-sm text-gray-700">
+                Signed in as <span className="font-semibold">{user.name}</span> ({user.email})
+              </p>
+            )}
+          </section>
+
+          {/* Delivery Address */}
+          <section className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
+            <h2 className="text-base font-bold text-maroon mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 bg-maroon text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+              Delivery Address
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+                <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Recipient's full name" className={inputClass(errors.name)} autoComplete="name" />
+                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1 <span className="text-red-500">*</span></label>
+                <input type="text" name="line1" value={form.line1} onChange={handleChange} placeholder="House / Flat / Block No., Street" className={inputClass(errors.line1)} autoComplete="address-line1" />
+                {errors.line1 && <p className="mt-1 text-xs text-red-500">{errors.line1}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2 <span className="text-xs text-slate-warm font-normal">(optional)</span></label>
+                <input type="text" name="line2" value={form.line2} onChange={handleChange} placeholder="Landmark, Area, Colony" className={inputClass(false)} autoComplete="address-line2" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
+                  <input type="text" name="city" value={form.city} onChange={handleChange} placeholder="City" className={inputClass(errors.city)} autoComplete="address-level2" />
+                  {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State <span className="text-red-500">*</span></label>
+                  <input type="text" name="state" value={form.state} onChange={handleChange} placeholder="State" className={inputClass(errors.state)} autoComplete="address-level1" />
+                  {errors.state && <p className="mt-1 text-xs text-red-500">{errors.state}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code <span className="text-red-500">*</span></label>
+                  <input type="text" name="pinCode" value={form.pinCode} onChange={handleChange} onBlur={handlePinBlur} placeholder="6-digit PIN" maxLength={6} className={inputClass(errors.pinCode || pinStatus === 'unavailable')} autoComplete="postal-code" />
+                  {errors.pinCode && <p className="mt-1 text-xs text-red-500">{errors.pinCode}</p>}
+                  {!errors.pinCode && pinStatus === 'checking' && <p className="mt-1 text-xs text-slate-warm">Checking availability...</p>}
+                  {!errors.pinCode && pinStatus === 'unavailable' && <p className="mt-1 text-xs text-red-500">Delivery not available to this PIN code.</p>}
+                  {!errors.pinCode && pinStatus === 'ok' && <p className="mt-1 text-xs text-green-600">✓ Delivery available</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
+                  <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="10-digit mobile" maxLength={10} className={inputClass(errors.phone)} autoComplete="tel" />
+                  {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Payment */}
+          <section className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
+            <h2 className="text-base font-bold text-maroon mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 bg-maroon text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+              Payment
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={handleRazorpay}
+                disabled={loading || pinStatus === 'unavailable'}
+                className="w-full py-3.5 rounded-xl font-bold text-base bg-maroon text-white hover:bg-red-900 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Processing...</>
+                ) : (
+                  <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Pay Online (Cards, UPI, Net Banking)</>
+                )}
+              </button>
+              {codEligible && (
+                <button
+                  onClick={handleCOD}
+                  disabled={loading || pinStatus === 'unavailable'}
+                  className="w-full py-3.5 rounded-xl font-bold text-base border-2 border-maroon text-maroon hover:bg-maroon hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cash on Delivery (COD)
+                </button>
+              )}
+            </div>
+            <p className="mt-3 text-xs text-slate-warm text-center flex items-center justify-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Payments are secured and encrypted
+            </p>
+          </section>
+        </div>
+
+        {/* ── Right: Order Summary ── */}
+        <div className="lg:sticky lg:top-6">
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-maroon text-white px-5 py-4">
+              <h2 className="font-bold text-base">Order Summary</h2>
+            </div>
+            <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+              {items.map((item) => (
+                <div key={`${item.productId}-${item.variantLabel}`} className="flex items-center gap-3 px-4 py-3">
+                  <div className="relative flex-shrink-0">
+                    <img src={item.image || '/placeholder-product.png'} alt={item.name} className="w-12 h-12 rounded-lg object-cover bg-gray-100" />
+                    <span className="absolute -top-1.5 -right-1.5 bg-maroon text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {item.quantity}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                    {item.variantLabel && <p className="text-xs text-slate-warm">{item.variantLabel}</p>}
+                  </div>
+                  <p className="text-sm font-semibold text-maroon flex-shrink-0">{formatCurrency(item.unitPrice * item.quantity)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="px-5 py-4 space-y-2 border-t border-gray-100">
+              <div className="flex justify-between text-sm text-slate-warm"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
+              <div className="flex justify-between text-sm text-slate-warm"><span>Shipping</span><span className="text-xs">Calculated at checkout</span></div>
+              <div className="flex justify-between text-sm text-slate-warm"><span>GST (18%)</span><span>{formatCurrency(gst)}</span></div>
+              <div className="flex justify-between font-bold text-base text-maroon border-t border-gray-200 pt-2 mt-1">
+                <span>Total</span><span>{formatCurrency(grandTotal)}</span>
+              </div>
+            </div>
+            <div className="px-5 pb-4">
+              <Link to="/cart" className="text-xs text-maroon hover:underline flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/></svg>
+                Edit cart
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

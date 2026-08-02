@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, India. The platform sells premium Kashmiri saffron, natural oils, skincare, and spices. The website is a full-stack ecommerce solution built with React JS (frontend) and Express JS (backend), styled with a warm brand palette (Saffron Red #C0392B, Gold #D4A017, Indigo #3B1F6E, Natural Linen #F5F0E8, Warm Slate #6B7280). Business contact: +91-9086660267.
+Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, India. The platform sells premium Kashmiri saffron, natural oils, skincare, and spices. The website is a full-stack ecommerce solution built with React JS (frontend) and Express JS (backend), styled with a warm brand palette (Saffron Orange #E67E22 for primary actions, Maroon #800020 for headers/navigation, Gold #D4AF37 for accents, Cream #FAF3E0 for backgrounds, Warm Gray #6B6560 for secondary text). Business contact: +91-9086660267.
 
 ---
 
@@ -22,6 +22,8 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 - **Admin_Panel**: The restricted interface for Admin users to manage the store
 - **Search_Service**: The subsystem handling product search and filtering
 - **Notification_Service**: The subsystem sending email/SMS confirmations to Customers and Admins
+- **Rate_Limiter**: Middleware preventing brute-force and abuse on auth (15 req/15 min), checkout (20 req/10 min), and general API (200 req/min) endpoints.
+- **confirmationToken**: A cryptographically random token attached to each order, used to generate a guest-accessible order confirmation URL.
 
 ---
 
@@ -84,14 +86,15 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 
 #### Acceptance Criteria
 
-1. WHEN a Customer initiates checkout, THE System SHALL present a multi-step form: (1) Delivery Address, (2) Order Review, (3) Payment.
-2. THE System SHALL allow both authenticated Customers and guest Customers to complete checkout.
+1. WHEN a Customer initiates checkout, THE System SHALL present a single-page layout containing contact information, delivery address, and payment all on one screen.
+2. Guest checkout is the DEFAULT flow — THE System SHALL NOT require a Customer to create an account or log in at any point during checkout. Guests must provide an email address for order confirmation and tracking.
 3. WHEN a Customer submits a delivery address, THE System SHALL validate that all required fields (name, address line 1, city, state, PIN code, phone) are present and correctly formatted.
 4. IF a Customer's PIN code is outside the serviceable delivery area, THEN THE System SHALL display a message indicating delivery is unavailable to that location.
-5. WHEN a Customer reaches the payment step, THE System SHALL display the order summary including items, subtotal, shipping fee, GST, and grand total.
+5. WHEN a Customer reaches the payment section, THE System SHALL display the order summary including items, subtotal, shipping fee, GST, and grand total.
 6. WHEN a Customer completes payment via THE Payment_Gateway, THE Order_Service SHALL create a new Order with status "Confirmed" and THE Notification_Service SHALL send an order confirmation email and SMS to the Customer.
 7. IF the Payment_Gateway returns a payment failure, THEN THE System SHALL display a failure message and allow the Customer to retry payment without losing Cart contents.
 8. THE System SHALL support Cash on Delivery (COD) as a payment option for eligible PIN codes.
+9. WHEN a guest Customer completes an order, THE System SHALL send a unique confirmation URL to their email address, allowing them to view the order without creating an account. After successful order placement, the guest Customer SHALL be redirected to an Order Confirmation page accessible via a unique token URL, with no login required.
 
 ---
 
@@ -121,6 +124,8 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 3. WHEN an Order status changes, THE Notification_Service SHALL send an email notification to the Customer with the updated status.
 4. WHEN a Customer requests order cancellation before the Order status is "Shipped", THE Order_Service SHALL cancel the Order and initiate a refund if payment was made online.
 5. IF a Customer attempts to cancel an Order with status "Shipped" or later, THEN THE System SHALL display a message that cancellation is no longer available and provide the customer support contact (+91-9086660267).
+6. WHEN a guest Customer visits "My Orders" and enters the email used at checkout, THE Order_Service SHALL display all orders associated with that email address.
+7. WHEN a Customer completes an order (guest or authenticated), THE System SHALL display an Order Confirmation page accessible via a secure token URL, showing order details without requiring login.
 
 ---
 
@@ -139,6 +144,8 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 7. THE Admin_Panel SHALL allow an Admin to view, search, and export the Customer list.
 8. WHEN an Admin initiates a refund from THE Admin_Panel, THE Order_Service SHALL trigger the refund via THE Payment_Gateway and update the Order status.
 9. THE Admin_Panel SHALL display a low-stock alert for any Product with stock quantity below a configurable threshold (default: 5 units).
+10. THE Admin_Panel SHALL display guest orders alongside registered customer orders, showing the guest email address.
+11. THE Admin_Panel SHALL allow searching orders by guest email address.
 
 ---
 
@@ -149,7 +156,7 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 #### Acceptance Criteria
 
 1. THE System SHALL render correctly on viewport widths from 320px (mobile) to 1440px (desktop) without horizontal scrolling or layout breakage.
-2. THE System SHALL apply the Muzab brand palette: Saffron Red (#C0392B) for primary actions and accents, Gold (#D4A017) for highlights and badges, Indigo (#3B1F6E) for headers and navigation, Natural Linen (#F5F0E8) for page backgrounds, and Warm Slate (#6B7280) for secondary text.
+2. THE System SHALL apply the Muzab brand palette: Saffron Orange (#E67E22) for primary actions, Maroon (#800020) for headers and navigation, Gold (#D4AF37) for accents and highlights, Cream (#FAF3E0) for page backgrounds, and Warm Gray (#6B6560) for secondary text.
 3. THE System SHALL display the Muzab brand name, logo, and contact number (+91-9086660267) in the site header and footer.
 4. THE System SHALL display the business address (Srinagar, J&K, India) and contact details in the footer on all pages.
 5. THE System SHALL achieve a Lighthouse performance score of 80 or above on mobile for the homepage and product listing page.
@@ -180,3 +187,26 @@ Muzab is a saffron and natural products ecommerce brand based in Srinagar, J&K, 
 2. WHEN an Order status is updated by an Admin, THE Notification_Service SHALL send a status update email to the Customer within 60 seconds.
 3. WHEN a Product's stock falls below the configured low-stock threshold, THE Notification_Service SHALL send an alert email to the Admin.
 4. WHEN a Customer registers, THE Notification_Service SHALL send a welcome email containing the brand name, contact details, and a link to the product catalog.
+
+---
+
+### Requirement 11: Shipping
+
+**User Story:** As a Customer, I want to know the shipping cost and have my order delivered anywhere in India, so that I can shop regardless of my location.
+
+#### Acceptance Criteria
+
+1. THE System SHALL accept delivery addresses for any valid 6-digit Indian PIN code.
+2. WHERE a PIN code is in the configured serviceable area (J&K, major cities), THE System SHALL apply the configured shipping fee for that area.
+3. WHERE a PIN code is not in the configured serviceable area, THE System SHALL apply a flat shipping fee of ₹99.
+4. WHERE a PIN code is explicitly marked as non-serviceable in the system, THE System SHALL reject checkout with a delivery-unavailable message.
+5. THE System SHALL display free shipping messaging for orders above ₹999 where applicable.
+
+---
+
+## Correctness Properties
+
+- **Property 32 — Guest checkout completion:** For any guest checkout with a valid email, delivery address, and payment, THE Order_Service SHALL create an order with `guestEmail` set and a `confirmationToken` generated. The confirmation endpoint with that token SHALL return the order details.
+- **Property 33 — Pan-India shipping fallback:** For any valid 6-digit PIN code not explicitly marked unserviceable, the shipping fee SHALL be either the configured fee (if in the serviceable database) or ₹99 (flat rate fallback). No valid PIN SHALL be rejected unless explicitly marked `isServiceable: false`.
+- **Property 34 — Rate limit enforcement:** For any IP making more than 15 auth requests within 15 minutes, subsequent requests SHALL receive HTTP 429. For checkout endpoints, the limit is 20 requests per 10 minutes.
+- **Property 35 — Duplicate review prevention:** For any user who has already submitted a review for a product, a second submission for the same product SHALL be rejected with HTTP 409 CONFLICT, regardless of rating or text content.

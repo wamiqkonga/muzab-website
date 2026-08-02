@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const CATEGORIES = [
   { name: 'Saffron', slug: 'Saffron', emoji: '🌸', description: 'Pure Kashmiri Mongra & Lacha' },
@@ -42,9 +43,29 @@ function StarRating({ count = 5 }) {
 }
 
 function ProductCard({ product }) {
+  const { addItem } = useCart();
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const image = product.images?.[0];
   const price = product.basePrice ?? product.variants?.[0]?.price ?? 0;
   const inStock = product.stock > 0 || product.variants?.some((v) => v.stock > 0);
+
+  async function handleAddToCart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!inStock || adding) return;
+    setAdding(true);
+    try {
+      const firstAvailableVariant = product.variants?.find((v) => v.stock > 0);
+      const variantLabel = firstAvailableVariant?.label ?? null;
+      const unitPrice = firstAvailableVariant?.price ?? price;
+      await api.post('/api/cart/items', { productId: product._id, variantLabel, quantity: 1 });
+      addItem({ productId: product._id, name: product.name, image, variantLabel, unitPrice });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch { /* silently fail */ } finally { setAdding(false); }
+  }
 
   return (
     <Link to={`/products/${product.slug}`} className="group bg-white rounded-2xl shadow-soft hover:shadow-card transition-shadow overflow-hidden flex flex-col border border-gold/10">
@@ -66,10 +87,17 @@ function ProductCard({ product }) {
         <p className="text-warm-gray text-xs mb-4 line-clamp-2 flex-1">{product.description || ''}</p>
         <div className="flex items-center justify-between mt-auto">
           <span className="text-maroon font-bold text-lg font-serif">₹{price.toLocaleString('en-IN')}</span>
-          {inStock
-            ? <span className="bg-saffron hover:bg-saffron-dark text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors min-h-[44px] flex items-center">Add to Cart</span>
-            : <span className="text-xs text-warm-gray bg-gray-100 px-3 py-2 rounded-lg">Out of Stock</span>
-          }
+          {inStock ? (
+            <button
+              onClick={handleAddToCart}
+              disabled={adding}
+              className={`text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors min-h-[44px] flex items-center ${added ? 'bg-green-600' : 'bg-saffron hover:bg-saffron-dark'}`}
+            >
+              {adding ? '…' : added ? '✓ Added' : 'Add to Cart'}
+            </button>
+          ) : (
+            <span className="text-xs text-warm-gray bg-gray-100 px-3 py-2 rounded-lg">Out of Stock</span>
+          )}
         </div>
       </div>
     </Link>
@@ -84,7 +112,9 @@ export default function Home() {
     api.get('/api/products', { params: { limit: 6 } })
       .then((res) => {
         const data = res.data;
-        setProducts(Array.isArray(data) ? data : data.products ?? []);
+        // API returns { success, data: { products, total } } or { products }
+        const list = data?.data?.products ?? data?.products ?? (Array.isArray(data) ? data : []);
+        setProducts(list);
       })
       .catch(() => {})
       .finally(() => setLoading(false));

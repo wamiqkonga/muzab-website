@@ -61,7 +61,11 @@ async function listAdminOrders(req, res, next) {
     if (customer) {
       const regex = new RegExp(customer, 'i');
       const matchingUsers = await User.find({ $or: [{ name: regex }, { email: regex }] }, { _id: 1 }).lean();
-      filter.userId = { $in: matchingUsers.map((u) => u._id) };
+      // Also match guest orders by guestEmail
+      filter.$or = [
+        { userId: { $in: matchingUsers.map((u) => u._id) } },
+        { guestEmail: { $regex: regex } },
+      ];
     }
 
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
@@ -70,7 +74,7 @@ async function listAdminOrders(req, res, next) {
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .populate('userId', 'name email')
-        .select('orderId status grandTotal createdAt userId')
+        .select('orderId status grandTotal createdAt userId guestEmail paymentMethod paymentStatus')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
 
 function StarRating({ rating, max = 5, size = 'md' }) {
   const sizeClass = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : 'text-base';
@@ -108,6 +109,7 @@ function ReviewList({ productId, averageRating, reviewCount }) {
 
 export default function ProductDetail() {
   const { slug } = useParams();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,7 +120,7 @@ export default function ProductDetail() {
   useEffect(() => {
     setLoading(true); setError(null);
     api.get(`/api/products/${slug}`)
-      .then((res) => { setProduct(res.data.product ?? res.data); setSelectedVariantIdx(0); })
+      .then((res) => { setProduct(res.data.data?.product ?? res.data.product ?? res.data); setSelectedVariantIdx(0); })
       .catch((err) => setError(err.response?.status === 404 ? 'Product not found.' : 'Failed to load product.'))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -134,6 +136,14 @@ export default function ProductDetail() {
     setAddingToCart(true); setCartMessage(null);
     try {
       await api.post('/api/cart/items', { productId: product._id, variantLabel: selectedVariant?.label ?? null, quantity: 1 });
+      // Update local cart state so the header badge and drawer reflect the change immediately
+      addItem({
+        productId: product._id,
+        name: product.name,
+        image: product.images?.[0],
+        variantLabel: selectedVariant?.label ?? null,
+        unitPrice: displayPrice,
+      });
       setCartMessage({ type: 'success', text: 'Added to cart!' });
     } catch (err) {
       setCartMessage({ type: 'error', text: err.response?.data?.error?.message ?? 'Could not add to cart.' });

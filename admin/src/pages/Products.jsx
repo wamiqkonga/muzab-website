@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
-import api from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = ['Saffron', 'Oils', 'Skincare', 'Spices', 'Supplements', 'Accessories', 'Other'];
 const EMPTY_FORM = { name: '', category: '', description: '', basePrice: '', stock: '', images: [''], isActive: true };

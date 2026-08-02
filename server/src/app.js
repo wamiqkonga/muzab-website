@@ -3,13 +3,21 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 
-const { authRateLimiter } = require('./middleware/rateLimiter');
+const { authRateLimiter, checkoutRateLimiter, generalRateLimiter } = require('./middleware/rateLimiter');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// Trust proxy in production (needed for rate limiting behind load balancers)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Security middleware
 app.use(helmet());
+app.use(helmet.noSniff());
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((o) => o.trim());
@@ -39,6 +47,13 @@ app.get('/health', (req, res) => {
 
 // Rate-limit auth routes
 app.use('/api/auth', authRateLimiter);
+
+// Rate-limit checkout
+app.use('/api/orders/checkout', checkoutRateLimiter);
+app.use('/api/orders/verify-payment', checkoutRateLimiter);
+
+// General rate limit on all API routes
+app.use('/api', generalRateLimiter);
 
 // Route stubs — loaded conditionally so the app doesn't crash if files don't exist yet
 const routes = [

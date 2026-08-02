@@ -62,6 +62,19 @@ async function submitReview(req, res, next) {
       });
     }
 
+    // Prevent duplicate reviews (one review per user per product)
+    const existingReview = await Review.findOne({ productId, userId });
+    if (existingReview) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'CONFLICT',
+          message: 'You have already submitted a review for this product',
+          details: [],
+        },
+      });
+    }
+
     // Save the review (isApproved defaults to false)
     const review = await Review.create({
       productId,

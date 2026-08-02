@@ -3,14 +3,16 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
-const initialState = { user: null, token: null };
+const initialState = { user: null, token: null, loading: true };
 
 function authReducer(state, action) {
   switch (action.type) {
     case 'LOGIN':
-      return { user: action.user, token: action.token };
+      return { user: action.user, token: action.token, loading: false };
     case 'LOGOUT':
-      return initialState;
+      return { user: null, token: null, loading: false };
+    case 'INIT':
+      return { ...state, loading: false };
     default:
       return state;
   }
@@ -30,7 +32,10 @@ export function AuthProvider({ children }) {
       } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        dispatch({ type: 'INIT' });
       }
+    } else {
+      dispatch({ type: 'INIT' });
     }
   }, []);
 

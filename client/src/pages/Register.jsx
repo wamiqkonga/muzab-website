@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
@@ -18,33 +20,19 @@ export default function Register() {
     setLoading(true);
     try {
       await api.post('/api/auth/register', form);
-      setSuccess(true);
+      // Auto-login after successful registration
+      const loginRes = await api.post('/api/auth/login', {
+        email: form.email,
+        password: form.password,
+      });
+      login(loginRes.data.token, loginRes.data.user);
+      navigate('/');
     } catch (err) {
       const msg = err.response?.data?.error?.message || 'Registration failed. Please try again.';
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-linen flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 text-center">
-          <div className="text-4xl mb-4">✉️</div>
-          <h2 className="text-xl font-bold text-indigo-brand mb-2">Almost there!</h2>
-          <p className="text-slate-warm text-sm">
-            Check your email to verify your account before signing in.
-          </p>
-          <Link
-            to="/login"
-            className="mt-6 inline-block text-saffron-red font-medium text-sm hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </div>
-      </div>
-    );
   }
 
   return (

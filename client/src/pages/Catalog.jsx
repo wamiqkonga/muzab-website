@@ -1,14 +1,52 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { useCart } from '../context/CartContext';
 
 const CATEGORIES = ['All', 'Saffron', 'Oils', 'Skincare', 'Spices'];
 const LIMIT = 12;
 
 function ProductCard({ product }) {
+  const { addItem } = useCart();
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const image = product.images?.[0];
   const price = product.basePrice ?? product.variants?.[0]?.price ?? 0;
   const outOfStock = product.stock === 0 && !product.variants?.some((v) => v.stock > 0);
+
+  async function handleAddToCart(e) {
+    e.preventDefault(); // don't navigate to product page
+    if (adding || outOfStock) return;
+    setAdding(true);
+    try {
+      // For products with variants, use the first available variant
+      const firstAvailableVariant = product.variants?.find((v) => v.stock > 0);
+      const variantLabel = firstAvailableVariant?.label ?? null;
+      const unitPrice = firstAvailableVariant?.price ?? price;
+
+      await api.post('/api/cart/items', {
+        productId: product._id,
+        variantLabel,
+        quantity: 1,
+      });
+
+      addItem({
+        productId: product._id,
+        name: product.name,
+        image,
+        variantLabel,
+        unitPrice,
+      });
+
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch {
+      // silently fail — user can try from product detail page
+    } finally {
+      setAdding(false);
+    }
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-linen overflow-hidden flex flex-col relative">
@@ -37,10 +75,16 @@ function ProductCard({ product }) {
             <span className="text-xs text-slate-warm bg-gray-100 px-3 py-2 rounded-lg">Out of Stock</span>
           ) : (
             <button
-              className="bg-saffron-red hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors min-w-[44px] min-h-[44px]"
+              onClick={handleAddToCart}
+              disabled={adding}
+              className={`text-xs font-semibold px-3 py-2 rounded-lg transition-colors min-w-[44px] min-h-[44px] ${
+                added
+                  ? 'bg-green-600 text-white'
+                  : 'bg-saffron-red hover:bg-red-700 text-white'
+              }`}
               aria-label={`Add ${product.name} to cart`}
             >
-              Add to Cart
+              {adding ? '…' : added ? '✓ Added' : 'Add to Cart'}
             </button>
           )}
         </div>
@@ -91,14 +135,10 @@ export default function Catalog() {
     api.get('/api/products', { params })
       .then((res) => {
         const data = res.data;
-        if (Array.isArray(data)) {
-          setProducts(data);
-          setTotalPages(1);
-        } else {
-          setProducts(data.products ?? []);
-          const total = data.total ?? data.products?.length ?? 0;
-          setTotalPages(Math.max(1, Math.ceil(total / LIMIT)));
-        }
+        const list = data?.data?.products ?? (Array.isArray(data) ? data : data.products ?? []);
+        setProducts(list);
+        const total = data?.data?.total ?? data?.total ?? list.length;
+        setTotalPages(Math.max(1, Math.ceil(total / LIMIT)));
       })
       .catch(() => setError('Failed to load products. Please try again.'))
       .finally(() => setLoading(false));

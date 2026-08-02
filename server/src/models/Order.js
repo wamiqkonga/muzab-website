@@ -59,6 +59,7 @@ const orderSchema = new mongoose.Schema(
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
+    confirmationToken: { type: String, index: true }, // for guest order lookup URL
     status: {
       type: String,
       enum: ['Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'],

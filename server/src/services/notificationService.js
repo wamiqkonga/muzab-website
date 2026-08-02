@@ -15,6 +15,10 @@ function getCatalogLink() {
   return base + '/catalog';
 }
 
+function getClientBase() {
+  return (process.env.CLIENT_URL || 'http://localhost:5173').split(',')[0].trim();
+}
+
 function createTransporter() {
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -198,7 +202,7 @@ async function sendLowStockAlert(adminEmail, product) {
 async function sendPasswordResetEmail(email, token) {
   try {
     const transporter = createTransporter();
-    const resetLink = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${token}`;
+    const resetLink = `${getClientBase()}/reset-password/${token}`;
     const html = `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;color:#3B1F6E">
         <h2 style="background:#3B1F6E;color:#F5F0E8;padding:16px 24px;margin:0">

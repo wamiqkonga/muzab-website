@@ -215,12 +215,21 @@ async function checkout(req, res, next) {
         paymentMethod: 'cod',
         paymentStatus: 'pending',
         status: 'Confirmed',
+        confirmationToken: crypto.randomBytes(24).toString('hex'),
         statusHistory: [{ status: 'Confirmed', changedAt: new Date(), note: 'Order placed via COD' }],
       });
 
       // Clear cart
       cart.items = [];
       await cart.save();
+
+      // Fire-and-forget order confirmation email
+      const codEmail = req.user ? req.user.email : req.body.guestEmail;
+      if (codEmail) {
+        notificationService.sendOrderConfirmation(codEmail, order).catch((err) => {
+          console.error('[checkout] sendOrderConfirmation error:', err.message);
+        });
+      }
 
       return res.status(201).json({
         success: true,
@@ -236,6 +245,7 @@ async function checkout(req, res, next) {
           grandTotal: order.grandTotal,
           items: order.items,
           deliveryAddress: order.deliveryAddress,
+          confirmationToken: order.confirmationToken,
           createdAt: order.createdAt,
         },
       });
@@ -358,7 +368,7 @@ async function verifyPayment(req, res, next) {
     const order = await Order.create({
       orderId: generateOrderId(),
       userId: req.user ? req.user._id : null,
-      guestEmail: req.body.guestEmail || null,
+      guestEmail: req.body.guestEmail || customerEmail,
       items,
       deliveryAddress,
       subtotal,
@@ -370,6 +380,7 @@ async function verifyPayment(req, res, next) {
       razorpayOrderId,
       razorpayPaymentId,
       razorpaySignature,
+      confirmationToken: crypto.randomBytes(24).toString('hex'),
       status: 'Confirmed',
       statusHistory: [{ status: 'Confirmed', changedAt: new Date(), note: 'Payment verified via Razorpay' }],
     });
@@ -414,6 +425,7 @@ async function verifyPayment(req, res, next) {
         grandTotal: order.grandTotal,
         items: order.items,
         deliveryAddress: order.deliveryAddress,
+        confirmationToken: order.confirmationToken,
         createdAt: order.createdAt,
       },
     });
@@ -635,4 +647,101 @@ async function cancelOrder(req, res, next) {
   }
 }
 
-module.exports = { checkout, verifyPayment, listOrders, getOrder, cancelOrder };
+/**
+ * GET /api/orders/lookup?email=xxx@example.com
+ * Guest order history: returns all orders placed with the given email.
+ * Works for both guest orders (guestEmail) and registered users.
+ */
+async function lookupGuestOrders(req, res, next) {
+  try {
+    const { email } = req.query;
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'A valid email address is required', details: [] },
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find registered user with this email (to also match their logged-in orders)
+    const User = require('../models/User');
+    const registeredUser = await User.findOne({ email: normalizedEmail }, { _id: 1 }).lean();
+
+    const orConditions = [{ guestEmail: normalizedEmail }];
+    if (registeredUser) {
+      orConditions.push({ userId: registeredUser._id });
+    }
+
+    const orders = await Order.find({ $or: orConditions })
+      .sort({ createdAt: -1 })
+      .select('orderId createdAt status grandTotal items confirmationToken guestEmail')
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      orders: orders.map((o) => ({
+        orderId: o.orderId,
+        _id: o._id,
+        date: o.createdAt,
+        status: o.status,
+        grandTotal: o.grandTotal,
+        itemsCount: o.items.length,
+        confirmationToken: o.confirmationToken,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/orders/confirmation/:token
+ * Retrieve an order by its confirmationToken (no auth required).
+ * Used for the post-checkout order confirmation page.
+ */
+async function getOrderByToken(req, res, next) {
+  try {
+    const { token } = req.params;
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Token is required', details: [] },
+      });
+    }
+
+    const order = await Order.findOne({ confirmationToken: token }).lean();
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Order not found', details: [] },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      order: {
+        orderId: order.orderId,
+        _id: order._id,
+        date: order.createdAt,
+        status: order.status,
+        statusHistory: order.statusHistory,
+        items: order.items,
+        deliveryAddress: order.deliveryAddress,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        subtotal: order.subtotal,
+        shippingFee: order.shippingFee,
+        gst: order.gst,
+        grandTotal: order.grandTotal,
+        guestEmail: order.guestEmail,
+        createdAt: order.createdAt,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { checkout, verifyPayment, listOrders, getOrder, cancelOrder, lookupGuestOrders, getOrderByToken };

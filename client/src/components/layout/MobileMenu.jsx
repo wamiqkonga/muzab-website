@@ -39,9 +39,8 @@ export default function MobileMenu({ isOpen, onClose }) {
           <Link to="/catalog" onClick={onClose} className={linkClass}>Shop</Link>
           <Link to="/cart"    onClick={onClose} className={linkClass}>Cart</Link>
           <div className="my-2 border-t border-gray-100" />
-          {user ? (
-            <Link to="/my-orders" onClick={onClose} className={linkClass}>My Orders</Link>
-          ) : (
+          <Link to="/my-orders" onClick={onClose} className={linkClass}>My Orders</Link>
+          {user ? null : (
             <>
               <Link to="/login"    onClick={onClose} className={linkClass}>Login</Link>
               <Link to="/register" onClick={onClose} className={linkClass}>Register</Link>
