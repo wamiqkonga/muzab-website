@@ -166,5 +166,5 @@ jobs:
         run: |
           ssh -p ${{ secrets.SSH_PORT }} \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ${{ secrets.API_PATH }} && npm ci --omit=dev && \
+            "cd ${{ secrets.API_PATH }} && install --omit=dev && \
              ${{ secrets.NODE_APP_RESTART_CMD }}"
