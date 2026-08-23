@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
+import { setPageMeta } from '../utils/seo';
 
 const CATEGORIES = [
   { name: 'Saffron', slug: 'Saffron', emoji: '🌸', description: 'Pure Kashmiri Mongra & Lacha' },
@@ -107,6 +108,10 @@ function ProductCard({ product }) {
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setPageMeta(null, 'Pure Kashmiri saffron, direct from farms — handpicked, lab-tested, and delivered fresh. Shop saffron, natural oils, skincare, and spices at Muzab.');
+  }, []);
 
   useEffect(() => {
     api.get('/api/products', { params: { limit: 6 } })

@@ -117,7 +117,7 @@ export default function Header({ onMenuOpen }) {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-1">
+                <div className="hidden md:flex items-center gap-1">
                   <Link to="/login" className="flex items-center justify-center h-11 px-3 text-sm font-medium text-white/85 hover:text-gold transition-colors">Login</Link>
                   <Link to="/register" className="flex items-center justify-center h-11 px-4 text-sm font-semibold bg-saffron hover:bg-saffron-dark text-white rounded-md transition-colors">Register</Link>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
+import { setPageMeta } from '../utils/seo';
 
 function StarRating({ rating, max = 5, size = 'md' }) {
   const sizeClass = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : 'text-base';
@@ -120,7 +121,12 @@ export default function ProductDetail() {
   useEffect(() => {
     setLoading(true); setError(null);
     api.get(`/api/products/${slug}`)
-      .then((res) => { setProduct(res.data.data?.product ?? res.data.product ?? res.data); setSelectedVariantIdx(0); })
+      .then((res) => {
+        const p = res.data.data?.product ?? res.data.product ?? res.data;
+        setProduct(p);
+        setSelectedVariantIdx(0);
+        setPageMeta(p.name, p.description || `Buy ${p.name} online — premium Kashmiri saffron & natural products from Muzab.`);
+      })
       .catch((err) => setError(err.response?.status === 404 ? 'Product not found.' : 'Failed to load product.'))
       .finally(() => setLoading(false));
   }, [slug]);

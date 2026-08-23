@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
+import { setPageMeta } from '../utils/seo';
 
 const CATEGORIES = ['All', 'Saffron', 'Oils', 'Skincare', 'Spices'];
 const LIMIT = 12;
@@ -124,6 +125,11 @@ export default function Catalog() {
   const debounceRef = useRef(null);
 
   useEffect(() => { setInputValue(searchParam); }, [searchParam]);
+
+  useEffect(() => {
+    const title = categoryParam !== 'All' ? categoryParam : 'Shop All Products';
+    setPageMeta(title, 'Browse premium Kashmiri saffron, natural oils, skincare, and spices — handpicked, lab-tested, delivered fresh from Muzab.');
+  }, [categoryParam]);
 
   useEffect(() => {
     setLoading(true);
