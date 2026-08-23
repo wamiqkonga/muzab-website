@@ -15,11 +15,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Redirect to /login on 401
+// Redirect to /login on 401 (except for auth endpoints, which handle their own errors)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthEndpoint = error.config?.url?.startsWith('/api/auth/');
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

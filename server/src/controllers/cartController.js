@@ -34,6 +34,39 @@ async function resolveCart(req, res) {
     if (!cart) {
       cart = await Cart.create({ userId: req.user._id, items: [] });
     }
+
+    // Merge a guest cart from this browser's session cookie, if any.
+    const sessionId = req.cookies && req.cookies[SESSION_COOKIE];
+    if (sessionId) {
+      const guestCart = await Cart.findOne({ sessionId });
+      if (guestCart && guestCart.items.length > 0) {
+        for (const guestItem of guestCart.items) {
+          const existingIndex = cart.items.findIndex(
+            (i) =>
+              i.productId.toString() === guestItem.productId.toString() &&
+              (i.variantLabel || null) === (guestItem.variantLabel || null)
+          );
+          if (existingIndex >= 0) {
+            cart.items[existingIndex].quantity += guestItem.quantity;
+          } else {
+            cart.items.push({
+              productId: guestItem.productId,
+              variantLabel: guestItem.variantLabel,
+              quantity: guestItem.quantity,
+              unitPrice: guestItem.unitPrice,
+              name: guestItem.name,
+              image: guestItem.image,
+            });
+          }
+        }
+        await cart.save();
+      }
+      if (guestCart) {
+        await Cart.deleteOne({ _id: guestCart._id });
+      }
+      res.clearCookie(SESSION_COOKIE);
+    }
+
     return { cart, sessionId: null };
   }
 
