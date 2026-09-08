@@ -220,15 +220,17 @@ export default function Home() {
       <section className="max-w-5xl mx-auto px-4 py-20 text-center">
         <span className="text-saffron text-xs font-semibold uppercase tracking-widest">Our Story</span>
         <h2 className="font-serif text-3xl md:text-4xl font-bold text-maroon mt-2 mb-5">
-          Rooted in Kashmir, Crafted with Tradition
+          Four Generations in Kashmir's Saffron Fields
         </h2>
         <p className="text-warm-gray text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
-          Muzab was born from a simple belief — that the world deserves access to truly authentic Kashmiri saffron.
-          We partner directly with small-scale farmers in the Pampore region, the saffron capital of India, ensuring
-          every strand you receive is harvested with care, tested for purity, and delivered with pride.
+          Muzab carries four generations of a single family's saffron trade — from my great-grandfather's fields
+          in Pampore, to my grandfather, to my father, and now to me. What was once carried village to village by
+          hand, I've now brought online — but the saffron itself hasn't changed: hand-harvested from the same
+          Kashmir valley, graded with the same care, and sent out only after it meets the standard my family has
+          held for generations.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-8 text-center">
-          {[['500+', 'Happy Customers'], ['3', 'Saffron Variants'], ['100%', 'Pure & Natural'], ['5★', 'Average Rating']].map(([val, label]) => (
+          {[['4', 'Generations'], ['100%', 'Pure & Natural'], ['2', 'Signature Blends'], ['Kashmir', 'Direct-Sourced']].map(([val, label]) => (
             <div key={label}>
               <p className="font-serif text-3xl font-bold text-saffron">{val}</p>
               <p className="text-xs text-warm-gray mt-1">{label}</p>
