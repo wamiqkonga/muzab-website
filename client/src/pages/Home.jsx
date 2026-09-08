@@ -69,35 +69,39 @@ function ProductCard({ product }) {
   }
 
   return (
-    <Link to={`/products/${product.slug}`} className="group bg-white rounded-2xl shadow-soft hover:shadow-card transition-shadow overflow-hidden flex flex-col border border-gold/10">
-      <div className="aspect-square bg-cream flex items-center justify-center overflow-hidden">
+    <Link to={`/products/${product.slug}`} className="group bg-white rounded-md shadow-soft hover:shadow-card transition-shadow overflow-hidden flex flex-col border border-gold/25">
+      <div className="relative aspect-[4/5] bg-cream flex items-center justify-center overflow-hidden">
         {image
           ? <img src={image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           : <span className="text-6xl">🌸</span>
         }
+        <span className="absolute top-3 left-3 px-3 py-1 bg-maroon/90 rounded-sm text-[10px] font-semibold uppercase tracking-wider text-gold">
+          {product.category || 'Saffron'}
+        </span>
       </div>
-      <div className="p-5 flex flex-col flex-1">
-        <p className="text-xs text-saffron font-semibold uppercase tracking-wider mb-1">{product.category || 'Saffron'}</p>
-        <h3 className="font-serif font-semibold text-maroon text-base leading-snug mb-1 line-clamp-2">{product.name}</h3>
-        {product.averageRating > 0 && (
-          <div className="flex items-center gap-1 mb-2">
+      <div className="p-5 flex flex-col flex-1 gap-2">
+        <h3 className="font-serif font-semibold text-maroon text-lg leading-snug line-clamp-2">{product.name}</h3>
+        <p className="text-warm-gray text-xs italic">Pampore Valley, Kashmir</p>
+        {product.averageRating > 0 ? (
+          <div className="flex items-center gap-1">
             <StarRating count={Math.round(product.averageRating)} />
             <span className="text-xs text-warm-gray">({product.reviewCount})</span>
           </div>
+        ) : (
+          <p className="text-xs text-warm-gray">No reviews yet</p>
         )}
-        <p className="text-warm-gray text-xs mb-4 line-clamp-2 flex-1">{product.description || ''}</p>
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-maroon font-bold text-lg font-serif">₹{price.toLocaleString('en-IN')}</span>
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-saffron font-bold text-xl">₹{price.toLocaleString('en-IN')}</span>
           {inStock ? (
             <button
               onClick={handleAddToCart}
               disabled={adding}
-              className={`text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors min-h-[44px] flex items-center ${added ? 'bg-green-600' : 'bg-saffron hover:bg-saffron-dark'}`}
+              className={`text-xs font-semibold px-4 py-2 rounded transition-colors min-h-[40px] flex items-center border ${added ? 'border-green-600 text-green-700 bg-green-50' : 'border-maroon text-maroon hover:bg-maroon hover:text-white'}`}
             >
               {adding ? '…' : added ? '✓ Added' : 'Add to Cart'}
             </button>
           ) : (
-            <span className="text-xs text-warm-gray bg-gray-100 px-3 py-2 rounded-lg">Out of Stock</span>
+            <span className="text-xs text-warm-gray bg-gray-100 px-3 py-2 rounded">Out of Stock</span>
           )}
         </div>
       </div>
@@ -129,34 +133,86 @@ export default function Home() {
     <div className="min-h-screen bg-cream">
 
       {/* ── Hero ── */}
-      <section className="relative bg-maroon text-white overflow-hidden">
-        {/* subtle gold gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-maroon via-maroon to-[#4a0012] opacity-90 pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-4 py-24 md:py-36 flex flex-col items-center text-center gap-7">
-          <span className="inline-block text-gold text-sm font-semibold uppercase tracking-widest border border-gold/40 px-4 py-1 rounded-full">
-            Kashmir's Finest
-          </span>
-          <h1 className="font-serif text-5xl md:text-7xl font-bold leading-tight">
-            Pure Kashmiri Saffron<br />
-            <span className="text-gold">Direct from Farms</span>
-          </h1>
-          <p className="text-white/70 text-lg md:text-xl max-w-xl leading-relaxed">
-            Handpicked, lab-tested, and delivered fresh — experience the world's most prized spice.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/catalog" className="inline-flex items-center justify-center h-12 px-8 bg-saffron hover:bg-saffron-dark text-white font-semibold rounded-xl text-base transition-colors shadow-lg">
-              Shop Now
-            </Link>
-            <Link to="/catalog?category=Saffron" className="inline-flex items-center justify-center h-12 px-8 border border-gold/50 text-gold hover:bg-gold/10 font-semibold rounded-xl text-base transition-colors">
-              View Saffron
-            </Link>
+      <section className="relative overflow-hidden bg-[radial-gradient(120%_140%_at_82%_8%,#93042A_0%,#800020_42%,#5C0016_100%)] text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_90%_0%,rgba(212,175,55,0.16)_0%,rgba(212,175,55,0)_70%)] pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-24">
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
+            {/* Copy */}
+            <div className="flex-1 flex flex-col gap-6 text-center md:text-left items-center md:items-start">
+              <div className="flex items-center gap-3">
+                <span className="hidden md:block w-8 h-px bg-gold" />
+                <span className="text-gold text-xs font-semibold uppercase tracking-[0.18em]">
+                  Hand-Harvested in Pampore, Kashmir
+                </span>
+              </div>
+              <h1 className="font-serif text-4xl md:text-6xl font-semibold leading-[1.1]">
+                Pure Kashmiri Saffron<br />
+                <span className="text-gold italic font-medium">Direct from Farms</span>
+              </h1>
+              <p className="text-white/75 text-base md:text-lg max-w-md leading-relaxed">
+                Each thread hand-plucked from crocus blooms at dawn, lab-tested for purity, and shipped within 48 hours — the same saffron Kashmiri households have trusted for generations.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-1">
+                <Link to="/catalog" className="inline-flex items-center justify-center h-12 px-8 bg-gold hover:bg-gold/90 text-maroon-dark font-semibold rounded text-sm transition-colors">
+                  Explore the Collection
+                </Link>
+                <Link to="/catalog?category=Saffron" className="inline-flex items-center justify-center h-12 px-2 border-b border-white/40 hover:border-gold text-white hover:text-gold font-medium text-sm transition-colors">
+                  Our Story →
+                </Link>
+              </div>
+            </div>
+
+            {/* Photo collage */}
+            <div className="relative flex-shrink-0 w-full max-w-xs md:max-w-none md:w-[340px] h-[300px] md:h-[380px]">
+              <div className="absolute right-0 md:right-4 top-0 w-[72%] h-[85%] rounded overflow-hidden border border-gold/50 shadow-2xl">
+                <img
+                  src="https://res.cloudinary.com/ddbuapktu/image/upload/v1788892000/close-up-saffron-still-life-arrangement_1_jhkqrj.jpg"
+                  alt="Kashmiri saffron threads, hand-harvested"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute left-0 bottom-0 w-[52%] h-[42%] rounded overflow-hidden border border-gold/70 shadow-xl">
+                <img
+                  src="https://res.cloudinary.com/ddbuapktu/image/upload/v1788891713/pexels-merve-safa-364773899-14411011_ne3buu.jpg"
+                  alt="Fresh saffron crocus flowers, hand-picked in Kashmir"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
           </div>
-          {/* trust badges */}
-          <div className="flex flex-wrap gap-4 justify-center mt-2">
-            {['🌿 100% Natural', '🔬 Lab Tested', '✋ Handpicked', '🚚 Free Shipping ₹999+'].map((b) => (
-              <span key={b} className="text-xs text-white/60 border border-white/15 px-3 py-1 rounded-full">{b}</span>
-            ))}
+
+          {/* decorative divider */}
+          <div className="flex items-center justify-center gap-3 mt-12 md:mt-16">
+            <span className="w-20 h-px bg-gold/40" />
+            <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
+              <path d="M1 7 Q 6 1, 11 7 T 21 7" stroke="#D4AF37" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <span className="w-20 h-px bg-gold/40" />
           </div>
+        </div>
+      </section>
+
+      {/* ── Trust strip ── */}
+      <section className="bg-cream">
+        <div className="max-w-6xl mx-auto px-4 py-10 flex flex-wrap md:flex-nowrap items-stretch">
+          {[
+            { label: '100% Natural', d: 'M12 21c-4-2.5-7-6-7-10.5A7 7 0 0 1 12 3a7 7 0 0 1 7 7.5C19 15 16 18.5 12 21Z M12 8v6M9.5 10.5 12 8l2.5 2.5' },
+            { label: 'Lab-Tested Purity', d: 'M9 3h6M10 3v5.2L5.5 16a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 8.2V3 M8 14h8' },
+            { label: 'Hand-Harvested', d: 'M7 11V6a2 2 0 1 1 4 0v5M11 10V4.5a2 2 0 1 1 4 0V10M15 10.5V6a2 2 0 1 1 4 0v6c0 5-3 8-7 8s-6-2-7.5-5L3 11.5A1.7 1.7 0 0 1 5.8 9.6L7 11' },
+            { label: 'Free Shipping ₹999+', d: 'M3 7h11v9H3z M14 10h4l3 3v3h-7z' },
+          ].map((item, i, arr) => (
+            <React.Fragment key={item.label}>
+              <div className="flex-1 min-w-[45%] md:min-w-0 flex flex-col items-center gap-3 px-4 py-2">
+                <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#800020" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    {item.d.split(' M').map((seg, si) => <path key={si} d={si === 0 ? seg : `M${seg}`} />)}
+                  </svg>
+                </div>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-maroon-dark text-center">{item.label}</span>
+              </div>
+              {i < arr.length - 1 && <span className="hidden md:block w-px bg-maroon/10 my-1" />}
+            </React.Fragment>
+          ))}
         </div>
       </section>
 
@@ -197,6 +253,17 @@ export default function Home() {
           ) : products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((p) => <ProductCard key={p._id} product={p} />)}
+              {products.length < 3 && (
+                <div className="flex flex-col items-center justify-center gap-4 border border-dashed border-maroon/30 rounded-md p-10 text-center">
+                  <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#800020" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </div>
+                  <h3 className="font-serif font-semibold text-maroon text-lg">More Origins,<br />Coming Soon</h3>
+                  <p className="text-warm-gray text-xs leading-relaxed max-w-[220px]">Cold-pressed oils, saffron skincare, and Kashmiri spices — arriving this season.</p>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-center text-warm-gray py-10">Products coming soon.</p>
