@@ -26,11 +26,8 @@ export default function AdminLayout({ children }) {
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-56 bg-maroon text-white flex flex-col transform transition-transform duration-200 md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
-          <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center">
-            <span className="text-maroon font-bold text-sm">M</span>
-          </div>
-          <span className="font-bold text-lg">Muzab Admin</span>
+        <div className="flex items-center px-5 py-5 border-b border-white/10">
+          <img src="/logo-horizontal-reversed.svg" alt="Muzab Organics" className="h-9 w-auto" />
         </div>
 
         <nav className="flex-1 py-4 space-y-1 px-3">

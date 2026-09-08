@@ -9,7 +9,7 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <h2 className="font-serif text-2xl font-bold text-gold mb-3">Muzab</h2>
+            <img src="/logo-horizontal-reversed.svg" alt="Muzab Organics" className="h-11 w-auto mb-3" />
             <p className="text-sm text-white/65 leading-relaxed">
               Premium Kashmiri saffron and natural products — sourced directly from the farms of Kashmir.
             </p>

@@ -36,11 +36,8 @@ export default function Header({ onMenuOpen }) {
                 </svg>
               </button>
 
-              <Link to="/" className="flex items-center gap-2 group">
-                <img src="/logo-icon.png" alt="Muzab" width="34" height="34" className="rounded-full bg-cream p-0.5" />
-                <span className="text-xl font-serif font-bold tracking-wide text-white group-hover:text-gold transition-colors">
-                  Muzab
-                </span>
+              <Link to="/" className="flex items-center group">
+                <img src="/logo-horizontal-reversed.svg" alt="Muzab Organics" className="h-10 w-auto" />
               </Link>
             </div>
 

@@ -26,7 +26,7 @@ export default function MobileMenu({ isOpen, onClose }) {
         aria-label="Navigation menu"
       >
         <div className="flex items-center justify-between px-4 h-16 bg-maroon text-white flex-shrink-0">
-          <span className="font-serif text-lg font-bold text-gold">Muzab</span>
+          <img src="/logo-horizontal-reversed.svg" alt="Muzab Organics" className="h-9 w-auto" />
           <button onClick={onClose} className="flex items-center justify-center w-11 h-11 rounded-md hover:bg-white/10 transition-colors" aria-label="Close menu">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
