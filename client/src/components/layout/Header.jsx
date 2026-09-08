@@ -37,11 +37,7 @@ export default function Header({ onMenuOpen }) {
               </button>
 
               <Link to="/" className="flex items-center gap-2 group">
-                {/* Gold saffron flower logo mark */}
-                <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-                  <circle cx="17" cy="17" r="17" fill="#D4AF37" />
-                  <text x="17" y="23" textAnchor="middle" fontSize="15" fontWeight="bold" fill="#800020" fontFamily="serif">م</text>
-                </svg>
+                <img src="/logo-icon.png" alt="Muzab" width="34" height="34" className="rounded-full bg-cream p-0.5" />
                 <span className="text-xl font-serif font-bold tracking-wide text-white group-hover:text-gold transition-colors">
                   Muzab
                 </span>

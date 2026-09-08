@@ -32,9 +32,7 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-maroon rounded-xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-gold text-xl font-bold">M</span>
-          </div>
+          <img src="/logo-icon.png" alt="Muzab" className="w-12 h-12 rounded-full mx-auto mb-3" />
           <h1 className="text-xl font-bold text-gray-900">Muzab Admin</h1>
           <p className="text-sm text-gray-500 mt-1">Sign in to your admin account</p>
         </div>
