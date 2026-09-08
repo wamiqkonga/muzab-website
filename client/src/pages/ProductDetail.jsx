@@ -207,6 +207,68 @@ export default function ProductDetail() {
             {product.ingredients && <div className="bg-white rounded-xl border border-linen p-4"><h2 className="text-sm font-bold text-indigo-brand uppercase mb-1">Ingredients / Materials</h2><p className="text-sm text-gray-700 leading-relaxed">{product.ingredients}</p></div>}
           </div>
         </div>
+
+        {/* ── Specifications ── */}
+        <section className="mt-10 bg-white rounded-xl border border-linen p-6">
+          <h2 className="text-lg font-bold text-indigo-brand mb-4">Specifications</h2>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div className="flex justify-between border-b border-linen pb-2">
+              <dt className="text-slate-warm">Origin</dt>
+              <dd className="font-semibold text-indigo-brand">Pampore, Kashmir</dd>
+            </div>
+            <div className="flex justify-between border-b border-linen pb-2">
+              <dt className="text-slate-warm">Form</dt>
+              <dd className="font-semibold text-indigo-brand">Whole Dried Threads</dd>
+            </div>
+            <div className="flex justify-between border-b border-linen pb-2">
+              <dt className="text-slate-warm">Shelf Life</dt>
+              <dd className="font-semibold text-indigo-brand">Best used within 24 months</dd>
+            </div>
+            <div className="flex justify-between border-b border-linen pb-2">
+              <dt className="text-slate-warm">Storage</dt>
+              <dd className="font-semibold text-indigo-brand">Cool, dark place, airtight container</dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* ── What Makes Saffron Powerful ── */}
+        <section className="mt-8 bg-white rounded-xl border border-linen p-6">
+          <h2 className="text-lg font-bold text-indigo-brand mb-4">What Gives Saffron Its Color, Aroma &amp; Taste</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm text-gray-700">
+            <div>
+              <h3 className="font-semibold text-saffron-red mb-1">Crocin — The Color</h3>
+              <p className="leading-relaxed">The compound behind saffron's deep golden-yellow. A handful of threads steeped in warm water or milk releases that signature color within minutes.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-saffron-red mb-1">Safranal — The Aroma</h3>
+              <p className="leading-relaxed">Gives saffron its distinct honey-and-hay fragrance. Real threads release this scent as soon as you open the pack — it shouldn't need convincing.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-saffron-red mb-1">Picrocrocin — The Taste</h3>
+              <p className="leading-relaxed">Responsible for saffron's warm, faintly bitter flavor — the note that rounds out both sweet and savory dishes it's added to.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Authenticity check ── */}
+        <section className="mt-8 bg-white rounded-xl border border-linen p-6">
+          <h2 className="text-lg font-bold text-indigo-brand mb-4">How to Check Your Saffron at Home</h2>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div>
+              <h3 className="font-semibold text-indigo-brand mb-1">1. The Water Test</h3>
+              <p className="leading-relaxed">Drop a few threads into warm water. Real saffron releases color slowly over several minutes and the threads keep their shape — they shouldn't dissolve or dump all their color instantly.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-indigo-brand mb-1">2. The Aroma Test</h3>
+              <p className="leading-relaxed">Crush a thread between your fingers. It should release a strong, sweet, hay-like fragrance right away — not a chemical smell, and not nothing at all.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-indigo-brand mb-1">3. The Visual Test</h3>
+              <p className="leading-relaxed">Genuine threads are deep crimson, separate from one another, dry and slightly brittle — not clumped together or artificially glossy.</p>
+            </div>
+          </div>
+        </section>
+
         <ReviewList productId={product._id} averageRating={product.averageRating} reviewCount={product.reviewCount} />
       </div>
     </div>
