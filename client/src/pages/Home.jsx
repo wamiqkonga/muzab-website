@@ -118,7 +118,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    api.get('/api/products', { params: { limit: 6 } })
+    api.get('/api/products', { params: { limit: 24 } })
       .then((res) => {
         const data = res.data;
         // API returns { success, data: { products, total } } or { products }
@@ -128,6 +128,11 @@ export default function Home() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const CATEGORY_ORDER = ['Saffron', 'Skincare', 'Oils', 'Spices'];
+  const productsByCategory = CATEGORY_ORDER
+    .map((cat) => ({ category: cat, items: products.filter((p) => p.category === cat) }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -252,20 +257,30 @@ export default function Home() {
                 <div key={i} className="bg-cream rounded-2xl h-80 animate-pulse" />
               ))}
             </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((p) => <ProductCard key={p._id} product={p} />)}
-              {products.length < 3 && (
-                <div className="flex flex-col items-center justify-center gap-4 border border-dashed border-maroon/30 rounded-md p-10 text-center">
-                  <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#800020" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
+          ) : productsByCategory.length > 0 ? (
+            <div className="flex flex-col gap-14">
+              {productsByCategory.map(({ category, items }) => (
+                <div key={category}>
+                  <div className="flex items-center gap-4 mb-6">
+                    <h3 className="font-serif text-xl md:text-2xl font-bold text-maroon whitespace-nowrap">{category}</h3>
+                    <span className="flex-1 h-px bg-gold/25" />
                   </div>
-                  <h3 className="font-serif font-semibold text-maroon text-lg">More Origins,<br />Coming Soon</h3>
-                  <p className="text-warm-gray text-xs leading-relaxed max-w-[220px]">Cold-pressed oils, saffron skincare, and Kashmiri spices — arriving this season.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((p) => <ProductCard key={p._id} product={p} />)}
+                    {category === 'Saffron' && items.length < 3 && (
+                      <div className="flex flex-col items-center justify-center gap-4 border border-dashed border-maroon/30 rounded-md p-10 text-center">
+                        <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#800020" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                        </div>
+                        <h3 className="font-serif font-semibold text-maroon text-lg">More Origins,<br />Coming Soon</h3>
+                        <p className="text-warm-gray text-xs leading-relaxed max-w-[220px]">Cold-pressed oils and Kashmiri spices — arriving this season.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           ) : (
             <p className="text-center text-warm-gray py-10">Products coming soon.</p>
