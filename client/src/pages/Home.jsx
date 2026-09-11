@@ -6,8 +6,8 @@ import { setPageMeta } from '../utils/seo';
 
 const CATEGORIES = [
   { name: 'Saffron', slug: 'Saffron', emoji: '🌸', description: 'Pure Kashmiri Mongra & Lacha' },
-  { name: 'Oils',    slug: 'Oils',    emoji: '🫙', description: 'Cold-pressed natural oils' },
   { name: 'Skincare',slug: 'Skincare',emoji: '✨', description: 'Saffron-infused skincare' },
+  { name: 'Oils',    slug: 'Oils',    emoji: '🫙', description: 'Cold-pressed natural oils' },
   { name: 'Spices',  slug: 'Spices',  emoji: '🌿', description: 'Premium Kashmiri spices' },
 ];
 

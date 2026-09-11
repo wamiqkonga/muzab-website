@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
-const CATEGORIES = ['All', 'Saffron', 'Oils', 'Skincare', 'Spices'];
+const CATEGORIES = ['All', 'Saffron', 'Skincare', 'Oils', 'Spices'];
 
 export default function Navbar({ onSearch }) {
   const [searchParams] = useSearchParams();

@@ -4,7 +4,7 @@ import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import { setPageMeta } from '../utils/seo';
 
-const CATEGORIES = ['All', 'Saffron', 'Oils', 'Skincare', 'Spices'];
+const CATEGORIES = ['All', 'Saffron', 'Skincare', 'Oils', 'Spices'];
 const LIMIT = 12;
 
 function ProductCard({ product }) {
