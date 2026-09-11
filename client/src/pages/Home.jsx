@@ -18,6 +18,13 @@ const BENEFITS = [
   { icon: '❤️', title: 'Heart Health',        desc: 'Helps maintain healthy cholesterol and blood pressure levels.' },
 ];
 
+const SKINCARE_BENEFITS = [
+  { icon: '🌿', title: 'Deep Cleansing',      desc: 'Neem and multani mitti draw out impurities and excess oil for naturally clear skin.' },
+  { icon: '🌾', title: 'Gentle Exfoliation',  desc: 'Cinnamon and nutmeg gently buff away dullness, leaving skin soft and awakened.' },
+  { icon: '🌸', title: 'Natural Radiance',    desc: 'Saffron is traditionally used to brighten and even out skin tone.' },
+  { icon: '💧', title: 'Soothing Hydration',  desc: 'Rose water and aloe vera calm and hydrate skin, perfect for everyday use.' },
+];
+
 const WHY_US = [
   { icon: '🌱', title: '100% Pure',        desc: 'No additives, fillers, or artificial colour — ever.' },
   { icon: '🔬', title: 'Lab Tested',       desc: 'Every batch is third-party tested for purity and potency.' },
@@ -301,6 +308,23 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {BENEFITS.map((b) => (
+            <div key={b.title} className="bg-white rounded-2xl p-6 shadow-soft border border-gold/10 text-center hover:shadow-card transition-shadow">
+              <span className="text-4xl block mb-3">{b.icon}</span>
+              <h3 className="font-serif font-semibold text-maroon text-base mb-2">{b.title}</h3>
+              <p className="text-warm-gray text-sm leading-relaxed">{b.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Skincare Benefits ── */}
+      <section className="max-w-6xl mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <span className="text-saffron text-xs font-semibold uppercase tracking-widest">Why Our Skincare?</span>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-maroon mt-2">Skin Benefits</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {SKINCARE_BENEFITS.map((b) => (
             <div key={b.title} className="bg-white rounded-2xl p-6 shadow-soft border border-gold/10 text-center hover:shadow-card transition-shadow">
               <span className="text-4xl block mb-3">{b.icon}</span>
               <h3 className="font-serif font-semibold text-maroon text-base mb-2">{b.title}</h3>
