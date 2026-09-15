@@ -179,14 +179,14 @@ export default function Home() {
             <div className="relative flex-shrink-0 w-full max-w-xs md:max-w-none md:w-[340px] h-[300px] md:h-[380px] animate-fade-in-up motion-reduce:animate-none" style={{ animationDelay: '150ms' }}>
               <div className="absolute right-0 md:right-4 top-0 w-[72%] h-[85%] rounded overflow-hidden border border-gold/50 shadow-2xl transition-transform duration-500 hover:scale-[1.02]">
                 <img
-                  src="https://res.cloudinary.com/ddbuapktu/image/upload/v1788892000/close-up-saffron-still-life-arrangement_1_jhkqrj.jpg"
+                  src="https://res.cloudinary.com/ddbuapktu/image/upload/f_auto,q_auto,w_600/v1788892000/close-up-saffron-still-life-arrangement_1_jhkqrj.jpg"
                   alt="Kashmiri saffron threads, hand-harvested"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="absolute left-0 bottom-0 w-[52%] h-[42%] rounded overflow-hidden border border-gold/70 shadow-xl transition-transform duration-500 hover:scale-[1.04]">
                 <img
-                  src="https://res.cloudinary.com/ddbuapktu/image/upload/v1788891713/pexels-merve-safa-364773899-14411011_ne3buu.jpg"
+                  src="https://res.cloudinary.com/ddbuapktu/image/upload/f_auto,q_auto,w_400/v1788891713/pexels-merve-safa-364773899-14411011_ne3buu.jpg"
                   alt="Fresh saffron crocus flowers, hand-picked in Kashmir"
                   className="w-full h-full object-cover"
                 />
