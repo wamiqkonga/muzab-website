@@ -62,6 +62,7 @@ jobs:
         with:
           name: client-dist
           path: client/dist/
+          include-hidden-files: true
           retention-days: 1
 
   # ─────────────────────────────────────────
@@ -96,6 +97,7 @@ jobs:
         with:
           name: admin-dist
           path: admin/dist/
+          include-hidden-files: true
           retention-days: 1
 
   # ─────────────────────────────────────────
@@ -138,6 +140,7 @@ jobs:
           scp -P ${{ secrets.SSH_PORT }} storefront.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/storefront.tar.gz
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "mkdir -p ${{ secrets.STOREFRONT_PATH }} && \
+             rm -rf ${{ secrets.STOREFRONT_PATH }}/assets && \
              tar -xzf ~/storefront.tar.gz -C ${{ secrets.STOREFRONT_PATH }} && \
              rm ~/storefront.tar.gz"
 
@@ -148,6 +151,7 @@ jobs:
           scp -P ${{ secrets.SSH_PORT }} admin.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/admin.tar.gz
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "mkdir -p ${{ secrets.ADMIN_PATH }} && \
+             rm -rf ${{ secrets.ADMIN_PATH }}/assets && \
              tar -xzf ~/admin.tar.gz -C ${{ secrets.ADMIN_PATH }} && \
              rm ~/admin.tar.gz"
 
