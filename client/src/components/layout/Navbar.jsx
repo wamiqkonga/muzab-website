@@ -25,7 +25,10 @@ export default function Navbar({ onSearch }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
 
           {/* Category links */}
-          <div className="flex items-center gap-1 overflow-x-auto">
+          <div
+            className="flex items-center gap-1 overflow-x-auto"
+            style={{ maskImage: 'linear-gradient(to right, black 92%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 92%, transparent 100%)' }}
+          >
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat}

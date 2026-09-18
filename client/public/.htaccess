@@ -1,0 +1,19 @@
+# SPA fallback for React Router (BrowserRouter) — muzaborganics.com
+# Without this, any direct URL other than "/" 404s on LiteSpeed/Apache
+# because there is no matching physical file for client-side routes.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Let the admin app (its own build, own .htaccess) handle its own routes
+  RewriteCond %{REQUEST_URI} ^/admin [NC]
+  RewriteRule ^ - [L]
+
+  # Serve real files and directories as-is (assets, images, favicon, etc.)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else falls back to index.html so React Router can render it
+  RewriteRule ^ /index.html [L]
+</IfModule>

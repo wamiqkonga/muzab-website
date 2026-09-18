@@ -15,6 +15,7 @@ import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import OrderDetail from './pages/OrderDetail';
 import OrderConfirmation from './pages/OrderConfirmation';
+import NotFound from './pages/NotFound';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
@@ -119,7 +120,14 @@ function AppRoutes() {
       <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
       <Route path="/admin/customers" element={<AdminRoute><AdminCustomers /></AdminRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="*"
+        element={
+          <Layout onSearch={handleSearch}>
+            <NotFound />
+          </Layout>
+        }
+      />
     </Routes>
   );
 }

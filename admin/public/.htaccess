@@ -1,0 +1,14 @@
+# SPA fallback for React Router (BrowserRouter) — admin panel at /admin/
+# Without this, refreshing or deep-linking into any admin route 404s.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /admin/
+
+  # Serve real files and directories as-is
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else falls back to /admin/index.html
+  RewriteRule ^ /admin/index.html [L]
+</IfModule>
